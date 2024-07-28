@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgres:16
+    restart: always
+    env_file: postgres.env
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+
+  web-interface:
+    image: dpage/pgadmin4:8
+    restart: always
+    env_file: pgadmin.env
+    volumes:
+      - type: bind
+        source: ./src
+        target: /piscine/
+        read_only: true
+    ports:
+      - "8000:80"
+    depends_on:
+      - db
+
+      #  cmd-interface: # Optional
+      #    build:
+      #      context: .
+      #      dockerfile: cmd-interface.Dockerfile
+      #    volumes:
+      #      - type: bind
+      #        source: ./src
+      #        target: /piscine/
+      #        read_only: true
+      #    stdin_open: true
+      #    tty: true
+      #    depends_on:
+      #      - db
+
+volumes:
+  pgdata:
